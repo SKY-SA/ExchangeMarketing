@@ -15,6 +15,9 @@ namespace AppInterface
         internal CategoryManager categoryManager;
         internal UserManager userManager;
         internal int userId;
+        int chosenYear = 0;
+        int chosenMonth = 0;
+        int chosenDay = 0;
 
         string categoryName = "";
         string productName = "";
@@ -29,6 +32,7 @@ namespace AppInterface
             // Satım yapılan ürünlerin listesine ulaşma
             foreach (var successedOrderProduct in orderProductManager.GetList_SuccessedBuy())
             { 
+             
                 //Ürünlerin detaylarına ulaşma
                 foreach (var detailOrderProduct in orderProductManager.GetDetailsOfProduct(categoryManager.GetList()))
                 {
@@ -41,7 +45,7 @@ namespace AppInterface
                             DefineTheVariables(detailOrderProduct);
                             lst_PurchaseHistory.Items.Add("Kategori ismi: " + detailOrderProduct.CategoryName + "  Ürün Adı: " + detailOrderProduct.ProductName + " Alım Fiyatı: "
                                 + detailOrderProduct.DemandPrice + " Adet: " + detailOrderProduct.DemandQuantity + " " + detailOrderProduct.StockType
-                                + "  Ödenen Tutar: " + detailOrderProduct.TotalPaybleAmount + " --->Alım Tarihi: " + detailOrderProduct.Time);
+                                + "  Ödenen Tutar: " + totalpayable+ " --->Alım Tarihi: " + detailOrderProduct.Time);
                         }
                         //Satıcı mı 
                         else if (detailOrderProduct.UserId == userId)
@@ -49,7 +53,7 @@ namespace AppInterface
                             DefineTheVariables(detailOrderProduct);
                             lst_PurchaseHistory.Items.Add("Kategori ismi: " + detailOrderProduct.CategoryName + "  Ürün Adı: " + detailOrderProduct.ProductName + " Satış Fiyatı: " 
                                 + detailOrderProduct.DemandPrice + " Adet: " + detailOrderProduct.DemandQuantity + " " + detailOrderProduct.StockType + " Alınan Tutar: "
-                                + detailOrderProduct.TotalPaybleAmount + " --->Satış Tarihi: " + detailOrderProduct.Time);
+                                + detailOrderProduct.DemandPrice*detailOrderProduct.DemandQuantity + " --->Satış Tarihi: " + detailOrderProduct.Time);
                         }
                     }
                 }
@@ -88,6 +92,53 @@ namespace AppInterface
             }
                
            
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            
+            chosenYear = dTime_Before.Value.Year - dTime_After.Value.Year;
+            chosenMonth = dTime_After.Value.Month - dTime_After.Value.Month;
+            chosenDay = dTime_After.Value.Day - dTime_After.Value.Day;
+
+            lst_PurchaseHistory.Items.Clear();
+            // Satım yapılan ürünlerin listesine ulaşma
+            foreach (var successedOrderProduct in orderProductManager.GetList_SuccessedBuy())
+            {
+                
+                //Ürünlerin detaylarına ulaşma
+                foreach (var detailOrderProduct in orderProductManager.GetDetailsOfProduct(categoryManager.GetList()))
+                {
+                    // satım yapılan ile detaylarına ulaşılan ürünlerin id'leri aynı mı kontrol
+                    if ((successedOrderProduct.ProductId == detailOrderProduct.ProductId) )
+                    {
+                        var result1 = DateTime.Compare( dTime_Before.Value, detailOrderProduct.Time);
+                       
+                        var result2 = DateTime.Compare( detailOrderProduct.Time, dTime_After.Value);
+                        if ((result1 <= 0) && (result2 <= 0))
+                        {
+                            //Alıcı mı 
+                            if (detailOrderProduct.ReceiverId == userId)
+                            {
+                                DefineTheVariables(detailOrderProduct);
+                                lst_PurchaseHistory.Items.Add("Kategori ismi: " + detailOrderProduct.CategoryName + "  Ürün Adı: " + detailOrderProduct.ProductName + " Alım Fiyatı: "
+                                    + detailOrderProduct.DemandPrice + " Adet: " + detailOrderProduct.DemandQuantity + " " + detailOrderProduct.StockType
+                                    + "  Ödenen Tutar: " + totalpayable + " --->Alım Tarihi: " + detailOrderProduct.Time);
+
+                            }
+                            //Satıcı mı 
+                            else if (detailOrderProduct.UserId == userId && (successedOrderProduct.Time.Day >= chosenDay) && (successedOrderProduct.Time.Month >= chosenMonth) && (successedOrderProduct.Time.Year >= chosenYear))
+                            {
+                                DefineTheVariables(detailOrderProduct);
+                                lst_PurchaseHistory.Items.Add("Kategori ismi: " + detailOrderProduct.CategoryName + "  Ürün Adı: " + detailOrderProduct.ProductName + " Satış Fiyatı: "
+                                    + detailOrderProduct.DemandPrice + " Adet: " + detailOrderProduct.DemandQuantity + " " + detailOrderProduct.StockType + " Alınan Tutar: "
+                                    + detailOrderProduct.DemandPrice * detailOrderProduct.DemandQuantity + " --->Satış Tarihi: " + detailOrderProduct.Time);
+                            }
+                        }
+                    }
+                }
+            }
 
         }
     }
